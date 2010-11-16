@@ -1,6 +1,6 @@
 A Greasemonkey User Script
 ==========================
-v 0.9
+v 0.9.1
 
 Summary
 -------
@@ -51,6 +51,10 @@ Multi-track conferences like:
 
 Changes
 -------
+
+v 0.9.1
+
++ 0.9 was botched on older conferences
 
 v 0.9
 

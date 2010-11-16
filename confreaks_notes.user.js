@@ -40,28 +40,7 @@ function setupOldStyle() {
     watchedTD = document.createElement('td');
     watchedTD.setAttribute( "class", "watched" );
     appendYesAndNo(watchedTD, href);
-    
-    // saveA = document.createElement('a');
-    // saveA.href="javascript:void(0);";
-    // saveA.appendChild(document.createTextNode('Save'));
-    // watchedTD.appendChild(saveA);
-    // notInterestedA = document.createElement('a');
-    // notInterestedA.href="javascript:void(0);";
-    // notInterestedA.appendChild(document.createTextNode('Ugh'));
-    // watchedTD.appendChild(notInterestedA);
-    
-    // if ((GM_getValue(s, 0) & 2) == 2) { // save: yes (g & 010)
-      // saveA.setAttribute( "class", "watchedS_set" );
-    // } else {                          // save: no
-      // saveA.setAttribute( "class", "watchedS" );
-    // }
-    // if ((GM_getValue(s, 0) & 4) == 4) { // ugh: yes (g & 100)
-      // notInterestedA.setAttribute( "class", "watchedNI_set" );
-    // } else {                          // ugh: no
-      // notInterestedA.setAttribute( "class", "watchedNI" );
-    // }
-    // saveA.addEventListener("click",          createSaveCallback(videoLink.getAttribute("href"), saveA, notInterestedA), false);
-    // notInterestedA.addEventListener("click", createUghCallback(videoLink.getAttribute("href"),  saveA, notInterestedA), false);
+    appendSaveAndUgh(watchedTD, href);
     
     row.appendChild(watchedTD);
   }
