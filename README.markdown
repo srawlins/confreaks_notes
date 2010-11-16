@@ -1,6 +1,6 @@
 A Greasemonkey User Script
 ==========================
-v 0.8
+v 0.9
 
 Summary
 -------
@@ -12,10 +12,20 @@ So this isn't 100% user-friendly. If it irks you, post a comment/issue and I'll 
 
 Functioning Conferences
 -----------------------
-I think right now it only works on single-track conferences, and only the older-style on Confreaks. This is the list:
+I think right now it only works on single-track conferences. This is the list:
 
++ Ruby Conference 2010
++ Golden Gate Ruby Conference 2010
++ Ruby|Web Conference 2010
++ Lone Star Ruby Conference 2010
++ Emerging Languages Camp 2010
++ Agile Roots 2010
++ Mountain West Ruby Conference 2010
++ LA Ruby Conference 2010
++ JRuby Conference 2009
 + GoRuCo 2009
 + LA Ruby Conference 2009
++ Mountain West Ruby Conference 2009
 + Parallels and Convergencies 2009
 + Acts as Conference 2009
 + Lone Star Ruby Conference 2008
@@ -30,18 +40,6 @@ I think right now it only works on single-track conferences, and only the older-
 Todo
 ----
 
-Newer-style conference pages like:
-
-+ Golden Gate Ruby Conference 2010
-+ Ruby|Web Conference 2010
-+ Lone Star Ruby Conference 2010
-+ Emerging Languages Camp 2010
-+ Agile Roots 2010
-+ Mountain West Ruby Conference 2010
-+ LA Ruby Conference 2010
-+ JRuby Conference 2009
-+ Mountain West Ruby Conference 2009
-
 Multi-track conferences like:
 
 + Ruby Conference 2009
@@ -53,6 +51,10 @@ Multi-track conferences like:
 
 Changes
 -------
+
+v 0.9
+
++ supporting new-style conference pages
 
 v 0.8
 

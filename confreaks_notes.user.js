@@ -3,22 +3,34 @@
 // @namespace      srawlins
 // @description    Track Confreaks videos
 // @include        http://*.confreaks.com/*
+// @include        http://*.confreaks.net/*
+// @include        http://confreaks.net/*
 // ==/UserScript==
 
 var url = window.location.pathname;
 var url = document.URL;
 var primaryContent = document.getElementById('primary-content');
-var videosHeaders = primaryContent.firstChild;
-var videoHeaders = document.evaluate("div/table[1]/tbody/tr[1]",
+var videoHeaders = primaryContent.firstChild;
+var videoDivs = document.evaluate("div[@class='videos']/div[@class='video']",
+      primaryContent, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+if (videoDivs.snapshotLength == 0) {  // old-style
+  setupOldStyle();
+} else {                              // new-style
+  setupNewStyle(videoDivs);
+}
+
+
+function setupOldStyle() {
+  var videoHeaders = document.evaluate("div/table[1]/tbody/tr[1]",
       primaryContent, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 
-var thWatched = document.createElement('th');
-thWatched.appendChild(document.createTextNode('Watched?'));
-videoHeaders.appendChild(thWatched);
+  var thWatched = document.createElement('th');
+  thWatched.appendChild(document.createTextNode('Watched?'));
+  videoHeaders.appendChild(thWatched);
 
-var videoRows = document.evaluate("div/table[1]/tbody/tr",
-      primaryContent, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-for (var i = videoRows.snapshotLength - 1; i>=1; i--) {  // skip first row
+  var videoRows = document.evaluate("div/table[1]/tbody/tr",
+        primaryContent, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+  for (var i = videoRows.snapshotLength - 1; i>=1; i--) {  // skip first row
     row = videoRows.snapshotItem(i);
     videoLink = document.evaluate("td[2]/a[1]",
       row, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
@@ -27,48 +39,95 @@ for (var i = videoRows.snapshotLength - 1; i>=1; i--) {  // skip first row
     s = getKey(url+""+href);
     watchedTD = document.createElement('td');
     watchedTD.setAttribute( "class", "watched" );
-    watchedA = document.createElement('a');
-    watchedA.href="javascript:void(0);";
-    watchedA.appendChild(document.createTextNode('Yes'));
-    watchedTD.appendChild(watchedA);
-    notYetA = document.createElement('a');
-    notYetA.href="javascript:void(0);";
-    notYetA.appendChild(document.createTextNode('No'));
-    watchedTD.appendChild(notYetA);
+    appendYesAndNo(watchedTD, href);
     
-    if (GM_getValue(s, 0) & 1 == 1) { // watched: yes
-      watchedA.setAttribute( "class", "watchedY_set" );
-      notYetA.setAttribute( "class", "watchedN" );
-    } else {                          // watched: no
-      watchedA.setAttribute( "class", "watchedY" );
-      notYetA.setAttribute( "class", "watchedN_set" );
-    }
-    watchedA.addEventListener("click", createYesCallback(videoLink.getAttribute("href"), watchedA, notYetA), false);
-    notYetA.addEventListener("click",  createNoCallback(videoLink.getAttribute("href"),  watchedA, notYetA), false);
+    // saveA = document.createElement('a');
+    // saveA.href="javascript:void(0);";
+    // saveA.appendChild(document.createTextNode('Save'));
+    // watchedTD.appendChild(saveA);
+    // notInterestedA = document.createElement('a');
+    // notInterestedA.href="javascript:void(0);";
+    // notInterestedA.appendChild(document.createTextNode('Ugh'));
+    // watchedTD.appendChild(notInterestedA);
     
-    saveA = document.createElement('a');
-    saveA.href="javascript:void(0);";
-    saveA.appendChild(document.createTextNode('Save'));
-    watchedTD.appendChild(saveA);
-    notInterestedA = document.createElement('a');
-    notInterestedA.href="javascript:void(0);";
-    notInterestedA.appendChild(document.createTextNode('Ugh'));
-    watchedTD.appendChild(notInterestedA);
-    
-    if ((GM_getValue(s, 0) & 2) == 2) { // save: yes (g & 010)
-      saveA.setAttribute( "class", "watchedS_set" );
-    } else {                          // save: no
-      saveA.setAttribute( "class", "watchedS" );
-    }
-    if ((GM_getValue(s, 0) & 4) == 4) { // ugh: yes (g & 100)
-      notInterestedA.setAttribute( "class", "watchedNI_set" );
-    } else {                          // ugh: no
-      notInterestedA.setAttribute( "class", "watchedNI" );
-    }
-    saveA.addEventListener("click",          createSaveCallback(videoLink.getAttribute("href"), saveA, notInterestedA), false);
-    notInterestedA.addEventListener("click", createUghCallback(videoLink.getAttribute("href"),  saveA, notInterestedA), false);
+    // if ((GM_getValue(s, 0) & 2) == 2) { // save: yes (g & 010)
+      // saveA.setAttribute( "class", "watchedS_set" );
+    // } else {                          // save: no
+      // saveA.setAttribute( "class", "watchedS" );
+    // }
+    // if ((GM_getValue(s, 0) & 4) == 4) { // ugh: yes (g & 100)
+      // notInterestedA.setAttribute( "class", "watchedNI_set" );
+    // } else {                          // ugh: no
+      // notInterestedA.setAttribute( "class", "watchedNI" );
+    // }
+    // saveA.addEventListener("click",          createSaveCallback(videoLink.getAttribute("href"), saveA, notInterestedA), false);
+    // notInterestedA.addEventListener("click", createUghCallback(videoLink.getAttribute("href"),  saveA, notInterestedA), false);
     
     row.appendChild(watchedTD);
+  }
+}
+
+function setupNewStyle(videoDivs) {
+  for (var i = videoDivs.snapshotLength - 1; i>=0; i--) {
+    row = videoDivs.snapshotItem(i);
+    var mainInfo = document.evaluate("div[@class='main-info']",
+      row, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    watchedDiv = document.createElement('div');
+    videoLink = document.evaluate("div[@class='thumbnail']/a",
+      row, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    href = videoLink.getAttribute("href");
+    s = getKey(url+""+href);
+    appendYesAndNo(watchedDiv, href);
+    appendSaveAndUgh(watchedDiv, href);
+    watchedDiv.setAttribute( "class", "watchedDiv" );
+    
+    mainInfo.parentNode.insertBefore(watchedDiv, mainInfo.nextSibling);
+  }
+}
+
+function appendYesAndNo(elm, href) {
+  var watchedA = document.createElement('a');
+  watchedA.href="javascript:void(0);";
+  watchedA.appendChild(document.createTextNode('Yes'));
+  elm.appendChild(watchedA);
+  var notYetA = document.createElement('a');
+  notYetA.href="javascript:void(0);";
+  notYetA.appendChild(document.createTextNode('No'));
+  elm.appendChild(notYetA);
+    
+  if (GM_getValue(getKey(url+""+href), 0) & 1 == 1) { // watched: yes
+    watchedA.setAttribute( "class", "watchedY_set" );
+    notYetA.setAttribute( "class", "watchedN" );
+  } else {                          // watched: no
+    watchedA.setAttribute( "class", "watchedY" );
+    notYetA.setAttribute( "class", "watchedN_set" );
+  }
+  watchedA.addEventListener("click", createYesCallback(href, watchedA, notYetA), false);
+  notYetA.addEventListener("click",  createNoCallback(href,  watchedA, notYetA), false);
+}
+
+function appendSaveAndUgh(elm, href) {
+  saveA = document.createElement('a');
+  saveA.href="javascript:void(0);";
+  saveA.appendChild(document.createTextNode('Save'));
+  elm.appendChild(saveA);
+  notInterestedA = document.createElement('a');
+  notInterestedA.href="javascript:void(0);";
+  notInterestedA.appendChild(document.createTextNode('Ugh'));
+  elm.appendChild(notInterestedA);
+  
+  if ((GM_getValue(s, 0) & 2) == 2) { // save: yes (g & 010)
+    saveA.setAttribute( "class", "watchedS_set" );
+  } else {                          // save: no
+    saveA.setAttribute( "class", "watchedS" );
+  }
+  if ((GM_getValue(s, 0) & 4) == 4) { // ugh: yes (g & 100)
+    notInterestedA.setAttribute( "class", "watchedNI_set" );
+  } else {                          // ugh: no
+    notInterestedA.setAttribute( "class", "watchedNI" );
+  }
+  saveA.addEventListener("click",          createSaveCallback(href, saveA, notInterestedA), false);
+  notInterestedA.addEventListener("click", createUghCallback(href,  saveA, notInterestedA), false);
 }
 
 function createYesCallback(href, yesA, noA) {
@@ -124,8 +183,25 @@ addGlobalStyle(
   "  font-size: 75%;\n" +
   "}\n" +
   ".watched a {\n" +
-  //"  border-bottom: 0px;\n" +
   "  padding: 1px;\n" +
+  "}"
+);
+addGlobalStyle(
+  "#primary-content {\n" +
+  "  width: 750px;\n" +
+  "}\n" +
+  ".video .main-info {\n" +
+  "  width: 370px;\n" +
+  "}\n" +
+  ".videos {\n" +
+  "  padding-left: 5px;\n" +
+  "  padding-right: 5px;\n" +
+  "}"
+);
+addGlobalStyle(
+  ".watchedDiv {\n" +
+  "  float: left;\n" +
+  "  width: 130px;\n" +
   "}"
 );
 addGlobalStyle(
@@ -223,11 +299,6 @@ addGlobalStyle(
   "  color: #666666;\n" +
   "}"
 );
-
-function sayYes(event) {
-  alert("Yes!");
-  alert(event);
-}
 
 function addGlobalStyle(css) {
   try {
